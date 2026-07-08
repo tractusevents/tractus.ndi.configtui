@@ -15,6 +15,7 @@ internal sealed class AccessManagerApp
     private const int WhiptailHeight = 18;
     private const int WhiptailMaxWidth = 120;
     private const int WhiptailFallbackWidth = 80;
+    private const string FooterTrademark = "NDI is a registered trademark of Vizrt NDI AB.";
     private const string MulticastWarningMessage =
         "Enabling this option can have dire consequences unless your network has been configured for multicast delivery, including IGMP Snooping and Querying.\n\n" +
         "Please see the NDI White Paper for more information regarding multicast requirements. This document can be found at https://docs.ndi.video/all/getting-started/white-paper/multicast.\n\n" +
@@ -1307,14 +1308,17 @@ internal sealed class AccessManagerApp
     private void DrawBackTitle(int width)
     {
         var left = $" {AppBrand.Title} ";
-        WriteAt(0, 0, left, ConsoleColor.White, ConsoleColor.Blue, Math.Min(left.Length, width));
+        var right = $" {AppBrand.DisplayVersion} ";
 
-        var path = $" {_document.ConfigPath} ";
-        var rightWidth = Math.Min(path.Length, Math.Max(0, width - left.Length - 1));
-        if (rightWidth > 12)
+        if (width <= right.Length + 1)
         {
-            WriteAt(width - rightWidth, 0, Fit(path, rightWidth), ConsoleColor.Gray, ConsoleColor.Blue, rightWidth);
+            WriteAt(0, 0, Fit(left, width), ConsoleColor.White, ConsoleColor.Blue, width);
+            return;
         }
+
+        var leftWidth = Math.Max(0, width - right.Length - 1);
+        WriteAt(0, 0, Fit(left, leftWidth), ConsoleColor.White, ConsoleColor.Blue, leftWidth);
+        WriteAt(width - right.Length, 0, right, ConsoleColor.Gray, ConsoleColor.Blue, right.Length);
     }
 
     private void DrawMenu(int x, int y, int width, int height)
@@ -1404,8 +1408,20 @@ internal sealed class AccessManagerApp
 
     private void DrawStatus(int width, int height)
     {
+        const int gap = 2;
         var text = (_dirty ? " * " : "   ") + _status;
-        WriteAt(0, height - 1, Fit(text, width), _dirty ? ConsoleColor.Yellow : ConsoleColor.Gray, ConsoleColor.Blue, width);
+        var statusColor = _dirty ? ConsoleColor.Yellow : ConsoleColor.Gray;
+
+        if (width < FooterTrademark.Length + gap + 1)
+        {
+            WriteAt(0, height - 1, Fit(FooterTrademark, width), ConsoleColor.Gray, ConsoleColor.Blue, width);
+            return;
+        }
+
+        var statusWidth = width - FooterTrademark.Length - gap;
+        WriteAt(0, height - 1, Fit(text, statusWidth), statusColor, ConsoleColor.Blue, statusWidth);
+        WriteAt(statusWidth, height - 1, new string(' ', gap), ConsoleColor.Gray, ConsoleColor.Blue, gap);
+        WriteAt(width - FooterTrademark.Length, height - 1, FooterTrademark, ConsoleColor.Gray, ConsoleColor.Blue, FooterTrademark.Length);
     }
 
     private static int CalculateVisibleStart(int itemCount, int visibleRows, int selectedIndex) =>

@@ -4,12 +4,42 @@
 
 The default target is the current NDI configuration file. If `NDI_CONFIG_DIR` is set, the tool uses `$NDI_CONFIG_DIR/ndi-config.v1.json`; otherwise it uses `$HOME/.ndi/ndi-config.v1.json`. Use `--user` to force the `$HOME/.ndi` path or `--file <path>` to edit an arbitrary file.
 
+## Install on x86-64 Linux
+
+```bash
+curl -L -o "install-ndi-config-tui-linux-x64.sh" https://u.tractus.ca/nditoolbelt/config_linux_x64 \
+  && chmod +x ./install-ndi-config-tui-linux-x64.sh \
+  && sudo ./install-ndi-config-tui-linux-x64.sh
+```
+
+When run with `sudo`, the installer writes the application to `/opt/tractus/ndi-config` and installs the executable as `/opt/tractus/ndi-config/ndi-config`. It also creates this command symlink:
+
+```text
+/usr/local/bin/ndi-config -> /opt/tractus/ndi-config/ndi-config
+```
+
+After installation, run the editor with:
+
+```bash
+ndi-config
+```
+
 ## Run
 
 ```bash
 dotnet run --project Tractus.Ndi.ConfigTui
 dotnet run --project Tractus.Ndi.ConfigTui -- --file /path/to/ndi-config.v1.json
 ```
+
+## Versioning
+
+The application version is defined in `Tractus.Ndi.ConfigTui.csproj`. `dotnet publish` embeds that version into the binary assembly metadata, the TUI shows it in the top-right corner, and `scripts/build-installer.sh` reads the same `<Version>` value for the generated installer.
+
+## Missing Config Behavior
+
+If the target config file does not exist, the editor opens a new in-memory config rooted at `{ "ndi": {} }`. Nothing is created on disk until you apply/save. On save, the parent directory is created automatically, no `.bak` file is written unless the target file already existed, and the new file is populated with explicit defaults for groups, receive transports, and multicast.
+
+Absent config keys are treated as NDI defaults: Send and Receive are in the `Public` group, multicast is disabled with send prefix `239.255.0.0`, mask `255.255.0.0`, TTL `1`, and receive multicast disabled; there are no discovery servers, external sources, source filter, machine name, or preferred NICs; `Multi-TCP`, `UDP`, and `Reliable UDP` receive are enabled.
 
 ## Publish a Single Linux Binary
 

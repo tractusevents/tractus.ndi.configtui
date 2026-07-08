@@ -11,18 +11,25 @@ internal enum NdiDirection
 
 internal sealed class NdiConfigDocument
 {
+    private const string DefaultGroupName = "Public";
+    private const string DefaultMulticastSendPrefix = "239.255.0.0";
+    private const string DefaultMulticastSendMask = "255.255.0.0";
+    private const int DefaultMulticastTtl = 1;
+
     private static readonly JsonSerializerOptions WriteOptions = new()
     {
         WriteIndented = true
     };
 
     private readonly JsonObject _root;
+    private bool _materializeDefaultsOnSave;
 
     private NdiConfigDocument(string path, JsonObject root, bool createdNew)
     {
         ConfigPath = path;
         _root = root;
         CreatedNew = createdNew;
+        _materializeDefaultsOnSave = createdNew;
         _ = Ndi;
     }
 
@@ -60,7 +67,7 @@ internal sealed class NdiConfigDocument
     public IReadOnlyList<string> GetGroups(NdiDirection direction)
     {
         var groups = SplitCommaList(GetString("groups", DirectionKey(direction)));
-        return groups.Count == 0 ? ["Public"] : groups;
+        return groups.Count == 0 ? [DefaultGroupName] : groups;
     }
 
     public void SetGroups(NdiDirection direction, IReadOnlyList<string> groups) =>
@@ -153,19 +160,19 @@ internal sealed class NdiConfigDocument
 
     public bool AllowReliableUdpReceive
     {
-        get => GetBool(defaultValue: false, "rudp", "recv", "enable");
+        get => GetBool(defaultValue: true, "rudp", "recv", "enable");
         set => SetBool(value, "rudp", "recv", "enable");
     }
 
     public bool AllowUdpReceive
     {
-        get => GetBool(defaultValue: false, "unicast", "recv", "enable");
+        get => GetBool(defaultValue: true, "unicast", "recv", "enable");
         set => SetBool(value, "unicast", "recv", "enable");
     }
 
     public bool AllowMultiTcpReceive
     {
-        get => GetBool(defaultValue: false, "tcp", "recv", "enable");
+        get => GetBool(defaultValue: true, "tcp", "recv", "enable");
         set => SetBool(value, "tcp", "recv", "enable");
     }
 
@@ -177,19 +184,19 @@ internal sealed class NdiConfigDocument
 
     public string MulticastSendPrefix
     {
-        get => GetString("multicast", "send", "netprefix") ?? "239.255.0.0";
+        get => GetString("multicast", "send", "netprefix") ?? DefaultMulticastSendPrefix;
         set => SetString(value.Trim(), "multicast", "send", "netprefix");
     }
 
     public string MulticastSendMask
     {
-        get => GetString("multicast", "send", "netmask") ?? "255.255.0.0";
+        get => GetString("multicast", "send", "netmask") ?? DefaultMulticastSendMask;
         set => SetString(value.Trim(), "multicast", "send", "netmask");
     }
 
     public int MulticastTtl
     {
-        get => GetInt(defaultValue: 1, "multicast", "send", "ttl");
+        get => GetInt(defaultValue: DefaultMulticastTtl, "multicast", "send", "ttl");
         set => SetInt(value, "multicast", "send", "ttl");
     }
 
@@ -290,13 +297,19 @@ internal sealed class NdiConfigDocument
 
     public void Save(bool createBackup)
     {
+        var fileExists = File.Exists(ConfigPath);
+        if (_materializeDefaultsOnSave || !fileExists)
+        {
+            MaterializeDefaultConfiguration();
+        }
+
         var directory = Path.GetDirectoryName(ConfigPath);
         if (!string.IsNullOrWhiteSpace(directory))
         {
             Directory.CreateDirectory(directory);
         }
 
-        if (createBackup && File.Exists(ConfigPath))
+        if (createBackup && fileExists)
         {
             File.Copy(ConfigPath, ConfigPath + ".bak", overwrite: true);
         }
@@ -304,6 +317,21 @@ internal sealed class NdiConfigDocument
         var tempPath = ConfigPath + ".tmp";
         File.WriteAllText(tempPath, _root.ToJsonString(WriteOptions) + Environment.NewLine);
         File.Move(tempPath, ConfigPath, overwrite: true);
+        _materializeDefaultsOnSave = false;
+    }
+
+    private void MaterializeDefaultConfiguration()
+    {
+        SetDefaultString(DefaultGroupName, "groups", "send");
+        SetDefaultString(DefaultGroupName, "groups", "recv");
+        SetDefaultBool(true, "tcp", "recv", "enable");
+        SetDefaultBool(true, "unicast", "recv", "enable");
+        SetDefaultBool(true, "rudp", "recv", "enable");
+        SetDefaultBool(false, "multicast", "send", "enable");
+        SetDefaultString(DefaultMulticastSendPrefix, "multicast", "send", "netprefix");
+        SetDefaultString(DefaultMulticastSendMask, "multicast", "send", "netmask");
+        SetDefaultInt(DefaultMulticastTtl, "multicast", "send", "ttl");
+        SetDefaultBool(false, "multicast", "recv", "enable");
     }
 
     private JsonObject Ndi => EnsureObject(_root, "ndi");
@@ -404,6 +432,30 @@ internal sealed class NdiConfigDocument
 
     private void SetString(string value, params string[] path) =>
         SetNode(JsonValue.Create(value), path);
+
+    private void SetDefaultString(string value, params string[] path)
+    {
+        if (GetNode(path) is null)
+        {
+            SetString(value, path);
+        }
+    }
+
+    private void SetDefaultBool(bool value, params string[] path)
+    {
+        if (GetNode(path) is null)
+        {
+            SetBool(value, path);
+        }
+    }
+
+    private void SetDefaultInt(int value, params string[] path)
+    {
+        if (GetNode(path) is null)
+        {
+            SetInt(value, path);
+        }
+    }
 
     private void SetOptionalString(string? value, params string[] path)
     {
