@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>ndi-config-tui</AssemblyName>
+    <RootNamespace>Tractus.Ndi.ConfigTui</RootNamespace>
+    <Version>2026.7.7.1</Version>
+    <AssemblyVersion>2026.7.7.1</AssemblyVersion>
+    <FileVersion>2026.7.7.1</FileVersion>
+    <InformationalVersion>2026.7.7.1</InformationalVersion>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <PublishAot>true</PublishAot>
+    <StripSymbols>true</StripSymbols>
+    <OptimizationPreference>Size</OptimizationPreference>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <StripSymbols>true</StripSymbols>
+    <NativeDebugSymbols>false</NativeDebugSymbols>
+    <CopyOutputSymbolsToPublishDirectory>false</CopyOutputSymbolsToPublishDirectory>
+  </PropertyGroup>
+
+  <Target Name="RemoveNativeAotDebugSidecar" AfterTargets="_CopyAotSymbols" Condition="'$(Configuration)' == 'Release'">
+    <Delete Files="$(PublishDir)$(AssemblyName).dbg" TreatErrorsAsWarnings="true" />
+  </Target>
+</Project>

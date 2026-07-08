@@ -1,0 +1,5 @@
+bin/
+obj/
+artifacts/
+publish_accessmgr_x64/
+publish_accessmgr_aarch64/
