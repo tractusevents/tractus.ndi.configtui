@@ -153,9 +153,6 @@ SOFTWARE PRODUCT LICENSE
 GRANT OF LICENSE
 Tractus Events grants you a non-exclusive, non-transferable, royalty-free license to use the SOFTWARE PRODUCT on an unlimited number of computers.
 
-RESTRICTIONS
-You may not install, preload, bundle, distribute, or otherwise make available the SOFTWARE PRODUCT on any device, system, computer, media server, appliance, or other equipment that is offered for sale, resale, lease, rental, dry rental, or hire, or that is otherwise supplied to a third party as part of a commercial equipment rental or resale offering, without prior written permission from Tractus Events.
-
 OWNERSHIP
 Tractus Events retains all right, title, and interest in and to the SOFTWARE PRODUCT, including all intellectual property rights. The SOFTWARE PRODUCT is protected by copyright laws and international copyright treaties, as well as other intellectual property laws and treaties.
 
@@ -226,9 +223,6 @@ SOFTWARE PRODUCT LICENSE
 
 GRANT OF LICENSE
 Tractus Events grants you a non-exclusive, non-transferable, royalty-free license to use the SOFTWARE PRODUCT on an unlimited number of computers.
-
-RESTRICTIONS
-You may not install, preload, bundle, distribute, or otherwise make available the SOFTWARE PRODUCT on any device, system, computer, media server, appliance, or other equipment that is offered for sale, resale, lease, rental, dry rental, or hire, or that is otherwise supplied to a third party as part of a commercial equipment rental or resale offering, without prior written permission from Tractus Events.
 
 OWNERSHIP
 Tractus Events retains all right, title, and interest in and to the SOFTWARE PRODUCT, including all intellectual property rights. The SOFTWARE PRODUCT is protected by copyright laws and international copyright treaties, as well as other intellectual property laws and treaties.
